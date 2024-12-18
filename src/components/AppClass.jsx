@@ -8,50 +8,122 @@ export default class AppClass extends Component {
     constructor(props) {
         super(props)
 
-
         const savedTodos = localStorage.getItem("todos")
 
         this.state = {
-            todos: [
-                {
-                    id: 1,
-                    title: "shopping",
-                    completed: false
-                },
-                {
-                    id: 2,
-                    title: "cooking",
-                    completed: false
-                },
-                {
-                    id: 3,
-                    title: "cleaning",
-                    completed: false
-                },
-            ]
+            todos: savedTodos ? JSON.parse(savedTodos) : [],
         }
-
-        this.newTask = ""
 
         this.submitNewTask = (event) => {
             event.preventDefault();
-
-            if (this.newTask) {
-                const updatedTodos = [
-                    ...this.state.todos,
-                    {
-                        id: this.state.todos.length + 1,
-                        title: this.newTask,
-                        completed: false
-                    }
-                ]
                 this.setState(prevState => {
-                    return {
-                        todos: updatedTodos
+                    const newstate = {
+                        ...prevState,
+                        todo_title: "",
+                        todos: [...prevState.todos, {id: prevState.todos.length + 1, title: prevState.todo_title, completed: false}]
                     }
+
+                    this.setItemToLocalStorage(newstate)
+                    return newstate
                 })
-                this.newTask = ""
-            }
+        }
+
+        this.deleteTask = (id) => {
+            const updatedTodos = this.state.todos.filter(todo => todo.id !== id)
+            this.setState(prevState => {
+                const newState = {
+                    ...prevState,
+                    todo_title: "",
+                    todos: updatedTodos
+                }
+
+                this.setItemToLocalStorage(newState)
+
+                return newState
+            })
+
+        }
+
+        this.deleteCompletedTasks = () => {
+           const uncompeletedTask = this.state.todos.filter(task => task.completed === false)
+
+            this.setState(prevState => {
+                const newState = {
+                    ...prevState,
+                    todo_title: "",
+                    todos: uncompeletedTask
+                }
+
+                this.setItemToLocalStorage(newState)
+
+                return newState
+            })
+        }
+
+        this.removeAllTasks = () => {
+            this.setState(prevState => {
+                const emptyState = {
+                    ...prevState,
+                    todos: []
+                }
+
+                this.setItemToLocalStorage(emptyState)
+
+                return emptyState
+            })
+        }
+
+        this.checkAllTasks = () => {
+            this.setState(prevState => {
+                const checkedState = {
+                    todos: prevState.todos.map(todo => {
+                        todo.completed = true
+                        return todo
+                    })
+                }
+
+                this.setItemToLocalStorage(checkedState)
+
+                return checkedState
+            })
+        }
+
+        this.uncheckAllTasks = () => {
+            this.setState(prevState => {
+                const uncheckedState = {
+                    todos: prevState.todos.map(todo => {
+                        todo.completed = false
+                        return todo
+                    })
+                }
+
+                this.setItemToLocalStorage(uncheckedState)
+
+                return uncheckedState
+            })
+        }
+
+
+        this.completeTask = (id) => {
+            const updatedTodos = this.state.todos.map(todo => {
+                if (todo.id === id) {
+                    todo.completed = !todo.completed
+                }
+                return todo
+            })
+            this.setState(prevState => {
+                const newState = {
+                    todos: updatedTodos
+                }
+
+                this.setItemToLocalStorage(newState)
+
+                return newState
+            })
+        }
+
+        this.setItemToLocalStorage = (newState) => {
+            localStorage.setItem("todos", JSON.stringify(newState.todos))
         }
     }
 
@@ -63,12 +135,13 @@ export default class AppClass extends Component {
                     <form
                         action={"#"}
                         onSubmit={ this.submitNewTask }
-                        onChange={(event) => this.newTask = event.target.value}
-                        className="flex gap-2 px-2">
+                        className="flex gap-2 px-2 mx-auto">
                         <input
                             type="text"
                             placeholder="Enter your task"
                             className="w-fit border rounded shadow px-5 py-2"
+                            value={ this.state.todo_title || "" }
+                            onChange={(event) => this.setState(prev => ({...prev, todo_title: event.target.value}))}
                         />
 
                         <button
@@ -102,28 +175,56 @@ export default class AppClass extends Component {
                                     className="flex gap-2 text-gray-700 justify-between hover:bg-gray-100 rounded px-2 py-4 capitalize"
                                 >
                                     <div className="space-x-2">
-                                        <input type="checkbox"/>
-                                        <span>{ todo.title }</span>
+
+                                        <input
+                                            checked={ todo.completed }
+                                            onClick={ () => this.completeTask(todo.id) }
+                                            type="checkbox"/>
+                                        <span
+                                            className={ todo.completed ? "line-through" : "" }
+                                        >{ todo.title }</span>
                                     </div>
-                                    <span className="">
+                                    <button onClick={ () => this.deleteTask(todo.id) }>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                               stroke="currentColor" className="size-5 font-bold">
                                             <path d="M6 18 18 6M6 6l12 12"/>
                                         </svg>
-                                    </span>
+                                    </button>
                                 </li>
                             ) }
                         </ul>
                     </div>
 
-                    <div className="flex gap-2">
-                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                            Remove Completed
+                    <div
+                        className={ this.state.todos.length > 0 ? "flex gap-2" : "hidden" }>
+                        <button
+                            onClick={ this.deleteCompletedTasks }
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            Remove Completed Tasks
                         </button>
 
-                        <button className="bg-gray-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        <button
+                            onClick={ this.removeAllTasks }
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            Remove All
+                        </button>
+
+                        <button
+                            onClick={ this.checkAllTasks }
+                            className={! this.isAllTasksNotCompleted ? "hidden" : "bg-gray-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" }>
                             Check All
                         </button>
+                        <button
+                            onClick={ this.uncheckAllTasks }
+                            className={this.isAllTasksCompleted ? "hidden" : "bg-gray-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" }
+                        >
+                            Uncheck All
+                        </button>
+                    </div>
+                    <div>
+                        <p className={ this.state.todos.length > 0 ? "hidden" : "text-center text-gray-500" }>
+                            No tasks available
+                        </p>
                     </div>
                 </div>
             </div>
