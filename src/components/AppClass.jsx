@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
 import './../App.css'
-import { useState } from "react";
-
+import React, { Component } from 'react'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { ChevronDownIcon, EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import {PencilIcon, PencilSquareIcon} from "@heroicons/react/24/outline";
 
 export default class AppClass extends Component {
 
@@ -122,9 +123,50 @@ export default class AppClass extends Component {
             })
         }
 
+        this.showAllTasks = () => {
+            return this.state.todos
+        }
+
+        this.showCompletedTasks = () => {
+            const completedTasks = this.state.todos.filter(task => task.completed === true)
+
+            this.setState(prevState => {
+                const newState = {
+                    ...prevState,
+                    todos: completedTasks
+                }
+
+                this.setItemToLocalStorage(newState)
+
+                return newState
+            })
+        }
+
+        this.showNotCompletedTasks = () => {
+            const activeTasks = this.state.todos.filter(task => task.completed === false)
+
+            this.setState(prevState => {
+                const newState = {
+                    ...prevState,
+                    todos: activeTasks
+                }
+
+                this.setItemToLocalStorage(newState)
+
+                return newState
+            })
+        }
+
         this.setItemToLocalStorage = (newState) => {
             localStorage.setItem("todos", JSON.stringify(newState.todos))
         }
+
+        this.filterOptions = [
+            { name : "All tasks", action: this.showAllTasks },
+            { name : "Completed tasks", action: this.showCompletedTasks },
+            { name : "Active tasks", action: this.showNotCompletedTasks }
+        ]
+
     }
 
     render() {
@@ -133,7 +175,7 @@ export default class AppClass extends Component {
                 <div className="flex flex-col mx-auto p-9 my-64 rounded-2xl shadow-xl w-fit gap-2 bg-white">
                     <h1 className="text-center text-xl p-2 font-bold">To do App</h1>
                     <form
-                        action={"#"}
+                        action={ "#" }
                         onSubmit={ this.submitNewTask }
                         className="flex gap-2 px-2 mx-auto">
                         <input
@@ -141,7 +183,7 @@ export default class AppClass extends Component {
                             placeholder="Enter your task"
                             className="w-fit border rounded shadow px-5 py-2"
                             value={ this.state.todo_title || "" }
-                            onChange={(event) => this.setState(prev => ({...prev, todo_title: event.target.value}))}
+                            onChange={ (event) => this.setState(prev => ({...prev, todo_title: event.target.value})) }
                         />
 
                         <button
@@ -154,17 +196,79 @@ export default class AppClass extends Component {
 
                     </form>
 
-                    <div className="flex gap-3 justify-between mx-2 my-2 text-sm text-gray-700">
-                        <button className="bg-gray-200 py-1 px-3 rounded">
-                            All
-                        </button>
+                    <div className="flex justify-between m-2">
+                        <div className="-ml-px grid grid-cols-1">
+                            <select
+                                id="filter"
+                                name="filter"
+                                aria-label="Filter tasks"
+                                onChange={ (event) => this.filterOptions[event.target.selectedIndex].action() }
 
-                        <button className="hover:bg-gray-100 py-1 px-3 rounded">
-                            Completed
-                        </button>
-                        <button className="hover:bg-gray-100 py-1 px-3 rounded">
-                            Active
-                        </button>
+                                className="col-start-1 row-start-1 w-full appearance-none rounded bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                            >
+                                { this.filterOptions.map((option, index) => (
+                                  <option
+                                        key={ index }
+                                        className="text-gray-900"
+                                  >
+                                      { option.name }
+                                  </option>
+                                )) }
+                            </select>
+                            <ChevronDownIcon
+                                aria-hidden="true"
+                                className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                            />
+                        </div>
+                        <Menu as="div" className="relative inline-block text-left">
+                            <div>
+                                <MenuButton
+                                    className="flex w-full appearance-none bg-white py-1.5 text-base text-gray-900 sm:text-sm/6"
+                                >
+                                    <span className="">Actions</span>
+                                    <EllipsisVerticalIcon className="ml-2 h-5 w-5 text-gray-400"  aria-hidden="true"/>
+                                </MenuButton>
+                            </div>
+                            <MenuItems
+                                transition
+                                className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                            >
+                                <div className="py-1">
+                                    <MenuItem>
+                                        <button
+                                            onClick={ this.deleteCompletedTasks }
+                                            className="flex w-full justify-between px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
+                                        >
+                                            Remove Completed Tasks
+                                        </button>
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <button
+                                            onClick={ this.removeAllTasks }
+                                            className="flex w-full justify-between px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
+                                        >
+                                            Remove All Tasks
+                                        </button>
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <button
+                                            onClick={ this.checkAllTasks }
+                                            className="flex w-full justify-between px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
+                                        >
+                                            Check All
+                                        </button>
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <button
+                                            onClick={ this.uncheckAllTasks }
+                                            className="flex w-full justify-between px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
+                                        >
+                                            Uncheck All
+                                        </button>
+                                    </MenuItem>
+                                </div>
+                            </MenuItems>
+                        </Menu>
                     </div>
 
                     <div>
@@ -172,57 +276,36 @@ export default class AppClass extends Component {
                             { this.state.todos.map((todo, index) =>
                                 <li
                                     key={ todo.id }
-                                    className="flex gap-2 text-gray-700 justify-between hover:bg-gray-100 rounded px-2 py-4 capitalize"
+                                    className="flex gap-2 text-gray-700 justify-between hover:bg-gray-100 rounded p-2 capitalize"
                                 >
                                     <div className="space-x-2">
 
                                         <input
                                             checked={ todo.completed }
                                             onClick={ () => this.completeTask(todo.id) }
-                                            type="checkbox"/>
-                                        <span
-                                            className={ todo.completed ? "line-through" : "" }
-                                        >{ todo.title }</span>
+                                            type="checkbox"
+                                        />
+                                        <span className={ todo.completed ? "line-through" : "" }
+                                        >
+                                                { todo.title }
+                                            </span>
                                     </div>
-                                    <button onClick={ () => this.deleteTask(todo.id) }>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                              stroke="currentColor" className="size-5 font-bold">
-                                            <path d="M6 18 18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
+
+                                    <div className="space-x-2">
+                                        <button>
+                                            <PencilSquareIcon className="size-5 text-gray-500" aria-hidden="true"/>
+                                        </button>
+                                        <button onClick={ () => this.deleteTask(todo.id) }>
+                                            <XMarkIcon className="size-5 text-gray-500" aria-hidden="true"/>
+                                        </button>
+                                    </div>
                                 </li>
                             ) }
                         </ul>
                     </div>
 
-                    <div
-                        className={ this.state.todos.length > 0 ? "flex gap-2" : "hidden" }>
-                        <button
-                            onClick={ this.deleteCompletedTasks }
-                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                            Remove Completed Tasks
-                        </button>
-
-                        <button
-                            onClick={ this.removeAllTasks }
-                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                            Remove All
-                        </button>
-
-                        <button
-                            onClick={ this.checkAllTasks }
-                            className={! this.isAllTasksNotCompleted ? "hidden" : "bg-gray-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" }>
-                            Check All
-                        </button>
-                        <button
-                            onClick={ this.uncheckAllTasks }
-                            className={this.isAllTasksCompleted ? "hidden" : "bg-gray-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" }
-                        >
-                            Uncheck All
-                        </button>
-                    </div>
                     <div>
-                        <p className={ this.state.todos.length > 0 ? "hidden" : "text-center text-gray-500" }>
+                    <p className={ this.state.todos.length > 0 ? "hidden" : "text-center text-gray-500" }>
                             No tasks available
                         </p>
                     </div>
