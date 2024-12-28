@@ -13,6 +13,7 @@ export default class AppClass extends Component {
 
         this.state = {
             todos: savedTodos ? JSON.parse(savedTodos) : [],
+            isEditing: false,
         }
 
         this.submitNewTask = (event) => {
@@ -27,6 +28,27 @@ export default class AppClass extends Component {
                     this.setItemToLocalStorage(newstate)
                     return newstate
                 })
+        }
+        this.editTask = (id) => {
+
+            this.setState(prevState => {
+                const updatedTodos = prevState.todos.map(todo => {
+                    if (todo.id === id) {
+                        todo.title = prevState.todo_title
+                    }
+                    return todo
+                })
+
+                const newState = {
+                    ...prevState,
+                    todo_title: "",
+                    todos: updatedTodos
+                }
+
+                this.setItemToLocalStorage(newState)
+
+                return newState
+            })
         }
 
         this.deleteTask = (id) => {
@@ -124,36 +146,34 @@ export default class AppClass extends Component {
         }
 
         this.showAllTasks = () => {
-            return this.state.todos
+            return this.setState(prevState => {
+                return {
+                    ...prevState,
+                    todos: JSON.parse(localStorage.getItem("todos"))
+                }
+            })
         }
 
         this.showCompletedTasks = () => {
-            const completedTasks = this.state.todos.filter(task => task.completed === true)
+            const completedTasks = JSON.parse(localStorage.getItem("todos")).filter(task => task.completed === true)
 
             this.setState(prevState => {
-                const newState = {
+                return {
                     ...prevState,
                     todos: completedTasks
                 }
-
-                this.setItemToLocalStorage(newState)
-
-                return newState
             })
         }
 
         this.showNotCompletedTasks = () => {
-            const activeTasks = this.state.todos.filter(task => task.completed === false)
+            const activeTasks = JSON.parse(localStorage.getItem("todos")).filter(task => task.completed === false)
 
             this.setState(prevState => {
-                const newState = {
+               return {
                     ...prevState,
                     todos: activeTasks
-                }
+               }
 
-                this.setItemToLocalStorage(newState)
-
-                return newState
             })
         }
 
@@ -167,13 +187,17 @@ export default class AppClass extends Component {
             { name : "Active tasks", action: this.showNotCompletedTasks }
         ]
 
+
+
     }
 
     render() {
+        const { isEditing } = this.state;
         return (
             <div>
                 <div className="flex flex-col mx-auto p-9 my-64 rounded-2xl shadow-xl w-fit gap-2 bg-white">
                     <h1 className="text-center text-xl p-2 font-bold">To do App</h1>
+
                     <form
                         action={ "#" }
                         onSubmit={ this.submitNewTask }
@@ -220,6 +244,7 @@ export default class AppClass extends Component {
                                 className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
                             />
                         </div>
+                        {/*actions*/}
                         <Menu as="div" className="relative inline-block text-left">
                             <div>
                                 <MenuButton
@@ -278,21 +303,41 @@ export default class AppClass extends Component {
                                     key={ todo.id }
                                     className="flex gap-2 text-gray-700 justify-between hover:bg-gray-100 rounded p-2 capitalize"
                                 >
-                                    <div className="space-x-2">
-
-                                        <input
-                                            checked={ todo.completed }
-                                            onClick={ () => this.completeTask(todo.id) }
-                                            type="checkbox"
-                                        />
-                                        <span className={ todo.completed ? "line-through" : "" }
-                                        >
+                                    <div className="flex gap-2">
+                                        <div className={ isEditing ?  "hidden" : "flex gap-2" }>
+                                            <input
+                                                checked={ todo.completed }
+                                                onClick={ () => this.completeTask(todo.id) }
+                                                type="checkbox"
+                                                onChange={ () => {} }
+                                            />
+                                            <span className={ todo.completed ? "line-through" : "" }>
                                                 { todo.title }
                                             </span>
+                                        </div>
+
+                                        <form
+                                            action={ "#" }
+                                            onSubmit={ (event) => this.editTask(todo.id) }
+                                            className={ isEditing ? "flex gap-2" : "hidden" }
+                                        >
+                                            <input
+                                                className={ "hover:bg-gray-100" }
+                                                type={ "text" }
+                                                value={ todo.title }
+                                                onChange={ }
+                                            />
+                                            <button>
+                                                Save
+                                            </button>
+                                        </form>
+
                                     </div>
 
                                     <div className="space-x-2">
-                                        <button>
+                                        <button
+                                            onClick={() => this.setState({ isEditing: true })}
+                                        >
                                             <PencilSquareIcon className="size-5 text-gray-500" aria-hidden="true"/>
                                         </button>
                                         <button onClick={ () => this.deleteTask(todo.id) }>
