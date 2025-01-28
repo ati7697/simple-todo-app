@@ -1,7 +1,7 @@
 import './../App.css'
 import React, { Component } from 'react'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { ChevronDownIcon, EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, EllipsisVerticalIcon, XMarkIcon,PlusCircleIcon } from '@heroicons/react/20/solid'
 import {PencilIcon, PencilSquareIcon} from "@heroicons/react/24/outline";
 
 export default class AppClass extends Component {
@@ -195,17 +195,17 @@ export default class AppClass extends Component {
         const { isEditing } = this.state;
         return (
             <div>
-                <div className="flex flex-col mx-auto p-9 my-64 rounded-2xl shadow-xl w-fit gap-2 bg-white">
-                    <h1 className="text-center text-xl p-2 font-bold">To do App</h1>
+                <div className="flex flex-col md:mx-auto p-6 md:my-64 md:rounded-2xl shadow-xl h-screen md:h-fit md:w-fit gap-2 bg-white">
+                    <h1 className=" text-xl p-2 font-bold">To do App</h1>
 
                     <form
                         action={ "#" }
                         onSubmit={ this.submitNewTask }
-                        className="flex gap-2 px-2 mx-auto">
+                        className="flex gap-2 px-2">
                         <input
                             type="text"
                             placeholder="Enter your task"
-                            className="w-fit border rounded shadow px-5 py-2"
+                            className="border rounded shadow px-5 py-2 w-full h-full"
                             value={ this.state.todo_title || "" }
                             onChange={ (event) => this.setState(prev => ({...prev, todo_title: event.target.value})) }
                         />
@@ -213,9 +213,10 @@ export default class AppClass extends Component {
                         <button
                             type="submit"
                             onSubmit={ this.submitNewTask }
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                            className="text-blue-500"
                         >
-                            Add Task
+                            <span className="hidden md:flex bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 rounded">Add Task</span>
+                            <PlusCircleIcon className="md:hidden size-8" aria-hidden="true"/>
                         </button>
 
                     </form>
@@ -309,7 +310,7 @@ export default class AppClass extends Component {
                                                 checked={ todo.completed }
                                                 onClick={ () => this.completeTask(todo.id) }
                                                 type="checkbox"
-                                                onChange={ () => {} }
+
                                             />
                                             <span className={ todo.completed ? "line-through" : "" }>
                                                 { todo.title }
@@ -325,7 +326,6 @@ export default class AppClass extends Component {
                                                 className={ "hover:bg-gray-100" }
                                                 type={ "text" }
                                                 value={ todo.title }
-                                                onChange={ }
                                             />
                                             <button>
                                                 Save
