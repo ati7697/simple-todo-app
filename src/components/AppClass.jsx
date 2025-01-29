@@ -197,28 +197,32 @@ export default class AppClass extends Component {
             <div>
                 <div className="flex flex-col md:mx-auto p-6 md:my-64 md:rounded-2xl shadow-xl h-screen md:h-fit md:w-fit gap-2 bg-white">
                     <h1 className=" text-xl p-2 font-bold">To do App</h1>
-
                     <form
                         action={ "#" }
                         onSubmit={ this.submitNewTask }
-                        className="flex gap-2 px-2">
-                        <input
-                            type="text"
-                            placeholder="Enter your task"
-                            className="border rounded shadow px-5 py-2 w-full h-full"
-                            value={ this.state.todo_title || "" }
-                            onChange={ (event) => this.setState(prev => ({...prev, todo_title: event.target.value})) }
-                        />
-
-                        <button
-                            type="submit"
-                            onSubmit={ this.submitNewTask }
-                            className="text-blue-500"
-                        >
-                            <span className="hidden md:flex bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 rounded">Add Task</span>
-                            <PlusCircleIcon className="md:hidden size-8" aria-hidden="true"/>
-                        </button>
-
+                        className="w-full max-w-md lg:col-span-5 lg:pt-2">
+                        <div className="flex gap-x-4">
+                            <label htmlFor="email-address" className="sr-only">
+                                Email address
+                            </label>
+                            <input
+                                id="task"
+                                name="task"
+                                type="text"
+                                required
+                                placeholder="Enter your task"
+                                value={ this.state.todo_title || "" }
+                                onChange={ (event) => this.setState(prev => ({...prev, todo_title: event.target.value})) }
+                                autoComplete="email"
+                                className="min-w-0 flex-auto rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                            />
+                            <button
+                                type="submit"
+                                className="flex-none rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            >
+                                Add
+                            </button>
+                        </div>
                     </form>
 
                     <div className="flex justify-between m-2">
