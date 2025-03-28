@@ -1,7 +1,6 @@
 import './../App.css'
 import axios from 'axios'
 import {Transition} from '@headlessui/react'
-
 import React, {Component} from 'react'
 import {PencilSquareIcon} from "@heroicons/react/24/outline";
 import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react'
@@ -67,9 +66,9 @@ export default class AppClass extends Component {
                 .then(response => {
                     this.setState(prev => ({
                             todos: prev.todos.map(todo =>
-                                todo.id === id ? {...todo, title: title, isEditing: false} : todo),
+                                todo.id === id ? {...todo, title: response.data.title, isEditing: false} : todo),
                             showMessage: true,
-                            message: response.data.message
+                            message: 'Task updated successfully',
                         }),
                     );
                 })
@@ -99,42 +98,47 @@ export default class AppClass extends Component {
             })
         }
 
+        this.toggleTask = (value, id) => {
+            axios.put(`${API_BASE}/todos/${id}/toggle`, {completed:value })
+                .then(response => {
+                    this.setState(prev => ({
+                        todos: prev.todos.map(todo =>
+                            todo.id === response.data.id ? {...todo, completed: response.data.completed} : todo),
+                    }));
+                })
+        }
+
         this.deleteTask = (id) => {
             axios.delete(`${API_BASE}/todos/${id}`)
                 .then(() => {
                     this.setState(prev => ({
-                        todos: prev.todos.filter(todo => todo.id !== id)
+                        todos: prev.todos.filter(todo => todo.id !== id),
+                        showMessage: true,
+                        message: 'Task deleted successfully',
                     }));
                 })
         }
 
         this.deleteCompletedTasks = () => {
-            const uncompeletedTask = this.state.todos.filter(task => task.completed === false)
-
-            this.setState(prevState => {
-                const newState = {
-                    ...prevState,
-                    todo_title: "",
-                    todos: uncompeletedTask
-                }
-
-                this.setItemToLocalStorage(newState)
-
-                return newState
-            })
+            axios.delete(`${API_BASE}/todos/delete-complete-tasks`)
+                .then((response) => {
+                    this.setState(prev => ({
+                        todos: prev.todos.filter(todo => todo.completed === false),
+                        showMessage: true,
+                        message: 'Completed tasks deleted successfully',
+                    }));
+                });
         }
 
         this.removeAllTasks = () => {
-            this.setState(prevState => {
-                const emptyState = {
-                    ...prevState,
-                    todos: []
-                }
-
-                this.setItemToLocalStorage(emptyState)
-
-                return emptyState
-            })
+            axios.delete(`${API_BASE}/todos/delete-all`)
+                .then(() => {
+                    this.setState(prev => ({
+                        todos: [],
+                        showMessage: true,
+                        message: 'All tasks deleted successfully',
+                    }));
+                })
         }
 
         this.checkAllTasks = () => {
@@ -164,25 +168,6 @@ export default class AppClass extends Component {
                 this.setItemToLocalStorage(uncheckedState)
 
                 return uncheckedState
-            })
-        }
-
-
-        this.completeTask = (id) => {
-            const updatedTodos = this.state.todos.map(todo => {
-                if (todo.id === id) {
-                    todo.completed = !todo.completed
-                }
-                return todo
-            })
-            this.setState(prevState => {
-                const newState = {
-                    todos: updatedTodos
-                }
-
-                this.setItemToLocalStorage(newState)
-
-                return newState
             })
         }
 
@@ -388,7 +373,10 @@ export default class AppClass extends Component {
                                     <div className="flex gap-2 items-center">
                                         <input
                                             checked={todo.completed}
-                                            onChange={() => this.completeTask(todo.id)}
+                                            onChange={(event) => {
+
+                                                this.toggleTask(event.target.value, todo.id)
+                                            }}
                                             type="checkbox"
                                         />
                                         {!todo.isEditing ? (
