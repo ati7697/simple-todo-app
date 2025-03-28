@@ -1,82 +1,82 @@
 import './../App.css'
+import axios from 'axios'
+import { Transition } from '@headlessui/react'
+
 import React, { Component } from 'react'
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { ChevronDownIcon, EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, EllipsisVerticalIcon,CheckCircleIcon } from '@heroicons/react/20/solid'
+import { XMarkIcon } from '@heroicons/react/20/solid'
+
+const API_BASE = 'http://myresume.test/api'
 
 export default class AppClass extends Component {
+    componentDidMount() {
+        axios.get(`${API_BASE}/todos`)
+            .then(response => {
+                this.setState({ todos: response.data });
+            })
+            .catch(error => {
+                console.error('Error fetching todos:', error);
+            });
+    }
+
     constructor(props) {
         super(props)
 
-        const savedTodos = localStorage.getItem("todos")
-
         this.state = {
-            todos: savedTodos ? JSON.parse(savedTodos) : [],
-            isEditing: false,
-        }
+            todos: [],
+            todo_title: "",
+            message: "",
+            showMessage: false,
+        };
 
         this.submitNewTask = (event) => {
             event.preventDefault();
-            this.setState(prevState => {
-                const newstate = {
-                    ...prevState,
-                    todo_title: "",
-                    todos: [...prevState.todos, {
-                        id: prevState.todos.length + 1,
-                        title: prevState.todo_title,
-                        completed: false
-                    }]
-                }
-
-                this.setItemToLocalStorage(newstate)
-                return newstate
-            })
+            axios.post(`${API_BASE}/todos`, {title: this.state.todo_title})
+                .then(response => {
+                    console.log(response.data)
+                    this.setState(prev => ({
+                        todo_title: "",
+                        todos: [...prev.todos, response.data]
+                    }))
+                })
+                .catch(error => {
+                    console.error("Error creating todo:", error);
+                });
         }
 
         this.markAsEditing = (id) => {
-            console.log(id)
             const updatedTodos = this.state.todos.map(todo => {
                 if (todo.id === id) {
-                    todo.isEditing =  true
+                    todo.isEditing = true
                 }
                 return todo
             })
 
-
             this.setState(prevState => {
-                const newState = {
+                return {
                     ...prevState,
-                    isEditing: true,
                     todos: updatedTodos
                 }
-
-                this.setItemToLocalStorage(newState)
-
-                return newState
             })
-
-
         }
-        this.updateTask = (value, id) => {
-            this.setState(prevState => {
-                const updatedTodos = prevState.todos.map(todo => {
-                    if (todo.id === id) {
-                        todo.title = value
-                        todo.isEditing = false
-                    }
-                    return todo
+
+        this.updateTask = (title, id) => {
+            axios.put(`${API_BASE}/todos/${id}/update`, { title: title })
+                .then(response => {
+                    console.log(response.data)
+                    this.setState(prev => ({
+                        todos: prev.todos.map(todo =>
+                            todo.id === id ? { ...todo, title: title, isEditing: false } : todo
+                        ), showMessage: true,
+                        message: response.data.message
+                    }),
+                    );
                 })
-
-                const newState = {
-                    ...prevState,
-                    isEditing: false,
-                    todos: updatedTodos
-                }
-
-                this.setItemToLocalStorage(newState)
-
-                return newState
-            })
+                .catch(error => {
+                    console.error("Error updating todo:", error);
+                });
         }
 
         this.cancelEdit = (event, id) => {
@@ -101,19 +101,12 @@ export default class AppClass extends Component {
         }
 
         this.deleteTask = (id) => {
-            const updatedTodos = this.state.todos.filter(todo => todo.id !== id)
-            this.setState(prevState => {
-                const newState = {
-                    ...prevState,
-                    todo_title: "",
-                    todos: updatedTodos
-                }
-
-                this.setItemToLocalStorage(newState)
-
-                return newState
-            })
-
+            axios.delete(`${API_BASE}/todos/${id}`)
+                .then(() => {
+                    this.setState(prev => ({
+                        todos: prev.todos.filter(todo => todo.id !== id)
+                    }));
+                })
         }
 
         this.deleteCompletedTasks = () => {
@@ -242,7 +235,41 @@ export default class AppClass extends Component {
     render() {
         return (
             <div>
+                <div
+                    aria-live="assertive"
+                    className="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6"
+                >
+                    <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
+                        <Transition show={this.state.showMessage}>
+                            <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white ring-1 shadow-lg ring-black/5 transition data-closed:opacity-0 data-enter:transform data-enter:duration-300 data-enter:ease-out data-closed:data-enter:translate-y-2 data-leave:duration-100 data-leave:ease-in data-closed:data-enter:sm:translate-x-2 data-closed:data-enter:sm:translate-y-0">
+                                <div className="p-4">
+                                    <div className="flex items-start">
+                                        <div className="shrink-0">
+                                            <CheckCircleIcon aria-hidden="true" className="size-6 text-green-400" />
+                                        </div>
+                                        <div className="ml-3 w-0 flex-1 pt-0.5">
+                                            <p className="text-sm font-medium text-gray-900">{this.state.message}</p>
+                                        </div>
+                                        <div className="ml-4 flex shrink-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    this.setState({ showMessage: false })
+                                                }}
+                                                className="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+                                            >
+                                                <span className="sr-only">Close</span>
+                                                <XMarkIcon aria-hidden="true" className="size-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
+                </div>
                 <div className="flex flex-col md:mx-auto p-6 md:my-64 md:rounded-2xl shadow-xl h-screen md:max-w-screen-sm md:max-h-max gap-2 bg-white">
+
                     <h1 className=" text-xl p-2 font-bold">To do App</h1>
                     <form
                         action={"#"}
@@ -259,7 +286,7 @@ export default class AppClass extends Component {
                                 required
                                 placeholder="Enter your task"
                                 value={this.state.todo_title || ""}
-                                onChange={(event) => this.setState(prev => ({...prev, todo_title: event.target.value}))}
+                                onChange={(event) => this.setState(prev => ({todo_title: event.target.value}))}
                                 autoComplete="email"
                                 className="min-w-0 flex-auto rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                             />
