@@ -1,12 +1,12 @@
 import './../App.css'
 import axios from 'axios'
-import { Transition } from '@headlessui/react'
+import {Transition} from '@headlessui/react'
 
-import React, { Component } from 'react'
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { ChevronDownIcon, EllipsisVerticalIcon,CheckCircleIcon } from '@heroicons/react/20/solid'
-import { XMarkIcon } from '@heroicons/react/20/solid'
+import React, {Component} from 'react'
+import {PencilSquareIcon} from "@heroicons/react/24/outline";
+import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react'
+import {ChevronDownIcon, EllipsisVerticalIcon, CheckCircleIcon} from '@heroicons/react/20/solid'
+import {XMarkIcon} from '@heroicons/react/20/solid'
 
 const API_BASE = 'http://myresume.test/api'
 
@@ -14,7 +14,7 @@ export default class AppClass extends Component {
     componentDidMount() {
         axios.get(`${API_BASE}/todos`)
             .then(response => {
-                this.setState({ todos: response.data });
+                this.setState({todos: response.data});
             })
             .catch(error => {
                 console.error('Error fetching todos:', error);
@@ -63,15 +63,14 @@ export default class AppClass extends Component {
         }
 
         this.updateTask = (title, id) => {
-            axios.put(`${API_BASE}/todos/${id}/update`, { title: title })
+            axios.put(`${API_BASE}/todos/${id}/update`, {title: title})
                 .then(response => {
-                    console.log(response.data)
                     this.setState(prev => ({
-                        todos: prev.todos.map(todo =>
-                            todo.id === id ? { ...todo, title: title, isEditing: false } : todo
-                        ), showMessage: true,
-                        message: response.data.message
-                    }),
+                            todos: prev.todos.map(todo =>
+                                todo.id === id ? {...todo, title: title, isEditing: false} : todo),
+                            showMessage: true,
+                            message: response.data.message
+                        }),
                     );
                 })
                 .catch(error => {
@@ -241,11 +240,12 @@ export default class AppClass extends Component {
                 >
                     <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
                         <Transition show={this.state.showMessage}>
-                            <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white ring-1 shadow-lg ring-black/5 transition data-closed:opacity-0 data-enter:transform data-enter:duration-300 data-enter:ease-out data-closed:data-enter:translate-y-2 data-leave:duration-100 data-leave:ease-in data-closed:data-enter:sm:translate-x-2 data-closed:data-enter:sm:translate-y-0">
+                            <div
+                                className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white ring-1 shadow-lg ring-black/5 transition data-closed:opacity-0 data-enter:transform data-enter:duration-300 data-enter:ease-out data-closed:data-enter:translate-y-2 data-leave:duration-100 data-leave:ease-in data-closed:data-enter:sm:translate-x-2 data-closed:data-enter:sm:translate-y-0">
                                 <div className="p-4">
                                     <div className="flex items-start">
                                         <div className="shrink-0">
-                                            <CheckCircleIcon aria-hidden="true" className="size-6 text-green-400" />
+                                            <CheckCircleIcon aria-hidden="true" className="size-6 text-green-400"/>
                                         </div>
                                         <div className="ml-3 w-0 flex-1 pt-0.5">
                                             <p className="text-sm font-medium text-gray-900">{this.state.message}</p>
@@ -254,12 +254,12 @@ export default class AppClass extends Component {
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    this.setState({ showMessage: false })
+                                                    this.setState({showMessage: false})
                                                 }}
                                                 className="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
                                             >
                                                 <span className="sr-only">Close</span>
-                                                <XMarkIcon aria-hidden="true" className="size-5" />
+                                                <XMarkIcon aria-hidden="true" className="size-5"/>
                                             </button>
                                         </div>
                                     </div>
@@ -268,7 +268,8 @@ export default class AppClass extends Component {
                         </Transition>
                     </div>
                 </div>
-                <div className="flex flex-col md:mx-auto p-6 md:my-64 md:rounded-2xl shadow-xl h-screen md:max-w-screen-sm md:max-h-max gap-2 bg-white">
+                <div
+                    className="flex flex-col md:mx-auto p-6 md:my-64 md:rounded-2xl shadow-xl h-screen md:max-w-screen-sm md:max-h-max gap-2 bg-white">
 
                     <h1 className=" text-xl p-2 font-bold">To do App</h1>
                     <form
@@ -392,7 +393,7 @@ export default class AppClass extends Component {
                                         />
                                         {!todo.isEditing ? (
                                             <span
-                                                className={ todo.completed ? "line-through" : "" }
+                                                className={todo.completed ? "line-through" : ""}
                                                 onDoubleClick={() => this.markAsEditing(todo.id)}
                                             >
                                                     {todo.title}
