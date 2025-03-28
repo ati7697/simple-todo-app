@@ -360,7 +360,7 @@ export default class AppClass extends Component {
                                     <div className="flex gap-2 items-center">
                                         <input
                                             checked={todo.completed}
-                                            onClick={() => this.completeTask(todo.id)}
+                                            onChange={() => this.completeTask(todo.id)}
                                             type="checkbox"
                                         />
                                         {!todo.isEditing ? (
