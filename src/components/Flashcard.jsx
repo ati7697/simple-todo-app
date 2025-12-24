@@ -6,9 +6,14 @@ export default class Flashcard extends Component {
     constructor(props) {
         super(props);
         const savedWords = JSON.parse(localStorage.getItem('flashcard_words')) || [];
+        const savedTranslations = JSON.parse(localStorage.getItem('flashcard_translations')) || [];
+
         this.state = {
             words: savedWords,
             newWord: '',
+            translations: savedTranslations,
+            newTranslation: '',
+            showTranslation: false,
             currentIndex: savedWords.length ? 0 : 0,
         };
 
@@ -21,6 +26,18 @@ export default class Flashcard extends Component {
                     words: newWords,
                     newWord: '',
                     currentIndex: newWords.length - 1, // show the newly added word
+                };
+            });
+        }
+
+        this.addTranslation = (event) => {
+            event.preventDefault();
+            this.setState(prevState => {
+                const newTranslations = [...prevState.translations, prevState.newTranslation];
+                localStorage.setItem('flashcard_translations', JSON.stringify(newTranslations));
+                return {
+                    translations: newTranslations,
+                    newTranslation: '',
                 };
             });
         }
@@ -45,6 +62,7 @@ export default class Flashcard extends Component {
     render() {
         const { words, currentIndex } = this.state;
         const currentWord = words.length ? words[currentIndex] : null;
+        let showTranslation = false;
 
         return (
             <div>
@@ -54,19 +72,41 @@ export default class Flashcard extends Component {
                     <form
                         action={"#"}
                         onSubmit={this.submitNewWord}
-                        className="w-full max-w-screen-sm lg:col-span-5 lg:pt-2">
+                        className="w-full space-y-2 max-w-screen-sm lg:col-span-5 lg:pt-2">
                         <div className="flex gap-x-4">
-                            <label htmlFor="email-address" className="sr-only">
-                                Email address
+                            <label
+                                htmlFor="new-word"
+                                className="sr-only"
+                            >
+                                New Word
                             </label>
                             <input
-                                id="task"
-                                name="task"
+                                id="new-word"
+                                name="new-word"
                                 type="text"
                                 required
                                 placeholder="Enter your word"
                                 value={this.state.newWord}
                                 onChange={(event) => this.setState(prev => ({...prev, newWord: event.target.value}))}
+                                autoComplete="off"
+                                className=" flex-auto rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                            />
+                        </div>
+                        <div className="flex gap-x-4">
+                            <label
+                                htmlFor="translation"
+                                className="sr-only"
+                            >
+                                Translation
+                            </label>
+                            <input
+                                id="translation"
+                                name="translation"
+                                type="text"
+                                required
+                                placeholder="Enter the translation"
+                                value={this.state.newTranslation}
+                                onChange={(event) => this.setState(prev => ({...prev, newTranslation: event.target.value}))}
                                 autoComplete="off"
                                 className="min-w-0 flex-auto rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                             />
@@ -80,11 +120,15 @@ export default class Flashcard extends Component {
                     </form>
 
                     <div className="overflow-hidden bg-gray-50 h-40 border shadow-sm sm:rounded-lg">
-                        <div className="px-4 py-5 sm:p-6 flex justify-center items-center h-full">
-                            {currentWord ? (
-                                <h3 className="text-2xl font-medium text-center text-gray-900">{currentWord}</h3>
+                        <div className="px-4 py-5 sm:p-6 flex justify-center items-center h-full cursor-pointer"
+                             onClick={() => this.setState(prev => ({ showTranslation: !prev.showTranslation }))}
+                        >
+                            {! this.state.showTranslation && currentWord ? (
+                                <h3 className="text-2xl font-medium text-center text-gray-900">
+                                    {currentWord}
+                                </h3>
                             ) : (
-                                <h3 className="text-lg text-center text-gray-500">No words yet — add one above</h3>
+                                <h3 className="text-2xl font-medium text-center text-gray-900">{this.state.translations[currentIndex] || 'No translation added'}</h3>
                             )}
                         </div>
                     </div>
