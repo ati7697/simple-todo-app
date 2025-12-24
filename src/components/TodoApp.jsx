@@ -4,7 +4,7 @@ import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/20/solid'
 
-export default class AppClass extends Component {
+export default class TodoApp extends Component {
     constructor(props) {
         super(props)
 
