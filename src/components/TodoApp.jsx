@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import BreadCrumbs from "./BreadCrumbs";
 
 export default class TodoApp extends Component {
     constructor(props) {
@@ -242,6 +243,8 @@ export default class TodoApp extends Component {
     render() {
         return (
             <div>
+                <BreadCrumbs/>
+
                 <div className="flex flex-col md:mx-auto p-6 md:my-64 md:rounded-2xl shadow-xl h-screen md:max-w-screen-sm md:max-h-max gap-2 bg-white">
                     <h1 className=" text-xl p-2 font-bold">To do App</h1>
                     <form
